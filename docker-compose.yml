@@ -1,0 +1,40 @@
+version: "3.9"
+services:
+  api:
+    image: "movies-svc"
+    ports: 
+      - "9886:8080"
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    environment: 
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysqldb:33060/moviesdb?allowPublicKeyRetrieval=true&useSSL=false&autoReconnect=true
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=password1
+    networks:
+      - movies-svc-network
+      
+  mysqldb:
+    image: mysql:8
+    ports: 
+      - "33060:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password1
+      - MYSQL_DATABASE=moviesdb
+      - MYSQL_PASSWORD=password1
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping","-h", "localhost","-uroot","-ppassword1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - movies-svc-network
+  adminer:
+        image: adminer
+        restart: always
+        ports: 
+            - 8383:8080
+  
+networks:
+  movies-svc-network:
+   
